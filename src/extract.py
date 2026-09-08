@@ -1,16 +1,26 @@
-import pyodbc
+import os
+
 import pandas as pd
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+
+load_dotenv()
+
+server = os.getenv("DB_SERVER")
+database = os.getenv("DB_NAME")
+driver = os.getenv("DB_DRIVER")
 
 connection_string = (
-    "DRIVER={ODBC Driver 18 for SQL Server};"
-    "SERVER=DESKTOP-3KP1DFI;"
-    "DATABASE=AdventureWorks2025;"
-    "Trusted_Connection=yes;"
-    "TrustServerCertificate=yes;"
+    f"mssql+pyodbc://@{server}/{database}"
+    f"?driver={driver.replace(' ', '+')}"
+    "&trusted_connection=yes"
+    "&TrustServerCertificate=yes"
 )
 
+engine = create_engine(connection_string)
+
 query = """
-SELECT TOP 10 
+SELECT TOP 10
     SalesOrderID,
     OrderDate,
     CustomerID,
@@ -19,8 +29,8 @@ FROM Sales.SalesOrderHeader
 ORDER BY OrderDate DESC;
 """
 
-with pyodbc.connect(connection_string) as connection:
-    df = pd.read_sql(query,connection)
+df = pd.read_sql(query, engine)
 
 print(df)
 
+engine.dispose()
