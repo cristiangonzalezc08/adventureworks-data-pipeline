@@ -34,13 +34,17 @@ def extract_orders(engine):
 df = extract_orders(engine)
 
 df["OrderDate"] = pd.to_datetime(df["OrderDate"])
-
 df["OrderYear"] = df["OrderDate"].dt.year
+
+df["OrderValueCategory"] = pd.cut(
+    df["TotalDue"],
+    bins=[-float("inf"), 100, 500, float("inf")],
+    labels=["Low", "Medium", "High"],
+    right=False
+)
 
 output_path = "data/orders.csv"
 df.to_csv(output_path, index=False)
-print(df.head())
-print(df.dtypes)
 
 print(f"Data extracted successfully and saved to {output_path}")
 
