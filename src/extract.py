@@ -31,6 +31,9 @@ ORDER BY OrderDate DESC;
 
 df = pd.read_sql(query, engine)
 
-print(df)
+output_path = "data/orders.csv"
+df.to_csv(output_path, index=False)
+
+print(f"Data extracted successfully and saved to {output_path}")
 
 engine.dispose()
