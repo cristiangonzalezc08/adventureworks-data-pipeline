@@ -19,17 +19,21 @@ connection_string = (
 
 engine = create_engine(connection_string)
 
-query = """
-SELECT TOP 10
-    SalesOrderID,
-    OrderDate,
-    CustomerID,
-    TotalDue
-FROM Sales.SalesOrderHeader
-ORDER BY OrderDate DESC;
-"""
+def extract_orders(engine):
+    query = """
+    SELECT
+        SalesOrderID,
+        OrderDate,
+        CustomerID,
+        TotalDue
+    FROM Sales.SalesOrderHeader
+    ORDER BY OrderDate DESC;
+    """
+    return pd.read_sql(query, engine)
 
-df = pd.read_sql(query, engine)
+df = extract_orders(engine)
+
+df["OrderDate"] = pd.to_datetime(df["OrderDate"])
 
 output_path = "data/orders.csv"
 df.to_csv(output_path, index=False)
