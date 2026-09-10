@@ -43,9 +43,33 @@ df["OrderValueCategory"] = pd.cut(
     right=False
 )
 
+customer_summary = (
+    df.groupby("CustomerID")
+    .agg(
+        NumberOfOrders=("SalesOrderID", "count"),
+        TotalSpent=("TotalDue", "sum"),
+        AverageOrderValue=("TotalDue", "mean")
+    )
+    .reset_index()
+)
+
+high_value_customers = customer_summary[
+    (customer_summary["NumberOfOrders"] > 5)
+    & (customer_summary["TotalSpent"] > 10000)
+]
+
 output_path = "data/orders.csv"
 df.to_csv(output_path, index=False)
 
 print(f"Data extracted successfully and saved to {output_path}")
 
+customer_output_path = "data/high_value_customers.csv"
+high_value_customers.to_csv(customer_output_path, index=False)
+
+print(
+    f"High-value customer data saved to {customer_output_path}"
+)
+
 engine.dispose()
+
+
