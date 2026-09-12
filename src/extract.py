@@ -4,11 +4,20 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
+
 load_dotenv()
+
 
 server = os.getenv("DB_SERVER")
 database = os.getenv("DB_NAME")
 driver = os.getenv("DB_DRIVER")
+
+
+from transform import (
+    transform_orders,
+    create_customer_summary,
+    filter_high_value_customers,
+)
 
 connection_string = (
     f"mssql+pyodbc://@{server}/{database}"
@@ -18,6 +27,7 @@ connection_string = (
 )
 
 engine = create_engine(connection_string)
+
 
 def extract_orders(engine):
     query = """
@@ -31,32 +41,15 @@ def extract_orders(engine):
     """
     return pd.read_sql(query, engine)
 
+
 df = extract_orders(engine)
 
-df["OrderDate"] = pd.to_datetime(df["OrderDate"])
-df["OrderYear"] = df["OrderDate"].dt.year
+df = transform_orders(df)
 
-df["OrderValueCategory"] = pd.cut(
-    df["TotalDue"],
-    bins=[-float("inf"), 100, 500, float("inf")],
-    labels=["Low", "Medium", "High"],
-    right=False
-)
+customer_summary = create_customer_summary(df)
 
-customer_summary = (
-    df.groupby("CustomerID")
-    .agg(
-        NumberOfOrders=("SalesOrderID", "count"),
-        TotalSpent=("TotalDue", "sum"),
-        AverageOrderValue=("TotalDue", "mean")
-    )
-    .reset_index()
-)
+high_value_customers = filter_high_value_customers(customer_summary)
 
-high_value_customers = customer_summary[
-    (customer_summary["NumberOfOrders"] > 5)
-    & (customer_summary["TotalSpent"] > 10000)
-]
 
 output_path = "data/orders.csv"
 df.to_csv(output_path, index=False)
@@ -69,6 +62,7 @@ high_value_customers.to_csv(customer_output_path, index=False)
 print(
     f"High-value customer data saved to {customer_output_path}"
 )
+
 
 engine.dispose()
 
