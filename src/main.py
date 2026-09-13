@@ -4,6 +4,7 @@ from transform import (
     create_customer_summary,
     filter_high_value_customers,
 )
+from load import load_dataframe
 
 
 def main():
@@ -25,6 +26,9 @@ def main():
             "data/high_value_customers.csv",
             index=False
         )
+
+        load_dataframe(df, "Orders", engine)
+        load_dataframe(high_value_customers, "HighValueCustomers", engine)
 
         print("Data pipeline completed successfully.")
 
