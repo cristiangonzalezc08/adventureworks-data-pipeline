@@ -5,13 +5,27 @@ from transform import (
     filter_high_value_customers,
 )
 from load import load_dataframe
-
+from validate import (
+    validate_not_empty,
+    validate_unique_orders,
+    validate_required_columns,
+    validate_order_values,
+    validate_order_dates,
+    validate_customer_ids,
+)
 
 def main():
     engine = get_engine()
 
     try:
         df = extract_orders(engine)
+
+        validate_not_empty(df)
+        validate_required_columns(df)
+        validate_unique_orders(df)
+        validate_order_values(df)
+        validate_order_dates(df)
+        validate_customer_ids(df, engine)
 
         df = transform_orders(df)
 
