@@ -12,6 +12,7 @@ from validate import (
     validate_order_values,
     validate_order_dates,
     validate_customer_ids,
+    validate_transformed_orders,
 )
 
 def main():
@@ -28,6 +29,8 @@ def main():
         validate_customer_ids(df, engine)
 
         df = transform_orders(df)
+
+        validate_transformed_orders(df)
 
         customer_summary = create_customer_summary(df)
 

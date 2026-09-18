@@ -1,5 +1,7 @@
 import pandas as pd
 
+#Post transformation validations Pre-transformation validation
+
 def validate_not_empty(df):
     if df.empty:
         raise ValueError("Validation failed: DataFrame is empty.")
@@ -8,7 +10,7 @@ def validate_not_empty(df):
 
 
 def validate_unique_orders(df):
-    if df["SalesOrderID"].duplicated().any():
+    if df["SalesOrderID"].duplicated().any(): #.any() Checks if atleast one value
         raise ValueError(
             "Validation failed: Duplicate SalesOrderID values found."
         )
@@ -78,11 +80,24 @@ def validate_customer_ids(df,engine):
     customer = pd.read_sql(query,engine)
 
     invalid_customer = df[
-         ~df["CustomerID"].isin((customer["CustomerID"]))
+         ~df["CustomerID"].isin((customer["CustomerID"])) #The symbol ~ is the not operator in pandas. It reverses True and Fales
     ]
 
-    if not invalid_customer.empty:
+    if not invalid_customer.empty: #checks if the DataFrame is not empty, if it is not empty, it means that there are CustomerIDs in the orders DataFrame that do not exist in the Sales.Customer table.
         raise ValueError(
             "Validation failed: Orders contain CustomerIDs "
             "that do not exist in Sales.Customer."
+        )
+
+#Post transformation validations
+
+def validate_transformed_orders(df):
+    if df["OrderYear"].isna().any():
+        raise ValueError(
+            "Validation failed: OrderYear contains NULL values."
+        )
+
+    if df["OrderValueCategory"].isna().any():
+        raise ValueError(
+            "Validation failed: OrderValueCategory contains NULL values."
         )
